@@ -147,193 +147,278 @@ export default function DashboardPage() {
   };
 
   const StatusBadge = ({ status }: { status: string }) => {
-    let bgColor = 'bg-red-600', text = 'Belum Absen', ringColor = 'ring-red-400';
-    if (status === 'Masuk') { bgColor = 'bg-green-600'; text = 'Sudah Absen Masuk'; ringColor = 'ring-green-400'; }
-    else if (status === 'Pulang') { bgColor = 'bg-blue-600'; text = 'Selesai Hari Ini'; ringColor = 'ring-blue-400'; }
-    else if (status === 'Terlambat') { bgColor = 'bg-yellow-600'; text = 'Absen Terlambat'; ringColor = 'ring-yellow-400'; }
+    const config = {
+      "Masuk": {
+        label: "Sedang Bekerja",
+        icon: "●",
+        classes: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        dot: "bg-emerald-500",
+      },
+      "Pulang": {
+        label: "Selesai Hari Ini",
+        icon: "✓",
+        classes: "bg-blue-50 text-blue-700 border-blue-200",
+        dot: "bg-blue-500",
+      },
+      "Terlambat": {
+        label: "Absen Terlambat",
+        icon: "!",
+        classes: "bg-amber-50 text-amber-700 border-amber-200",
+        dot: "bg-amber-500",
+      },
+      "Belum Absen": {
+        label: "Belum Absen",
+        icon: "○",
+        classes: "bg-rose-50 text-rose-700 border-rose-200",
+        dot: "bg-rose-500",
+      },
+    }[status] || {
+      label: status,
+      icon: "•",
+      classes: "bg-slate-50 text-slate-700 border-slate-200",
+      dot: "bg-slate-500",
+    };
 
-    return <div className={`px-4 py-2 text-white rounded-full font-semibold text-sm shadow-md transition duration-300 ${bgColor} ring-2 ${ringColor} ring-opacity-50`}>{text}</div>;
-  };
-
-  // LOGIC TOMBOL
-  // Tombol Pulang aktif jika status Masuk/Terlambat DAN Logbook sudah COMPLETED
-  const isPulangDisabled = (absensiStatus !== 'Masuk' && absensiStatus !== 'Terlambat') || !hasCompletedLogbook;
-  
-  // Tombol Masuk aktif HANYA JIKA status 'Belum Absen' ATAU 'Pulang' (untuk memungkinkan double shift)
-  const isMasukDisabled = absensiStatus === 'Masuk' || absensiStatus === 'Terlambat';
-
-  type FeatureCardProps = { icon: React.ComponentType<{ size?: number }>, title: string, description: string, href?: string, onClick?: () => void };
-  const FeatureCard = ({ icon: Icon, title, description, href, onClick }: FeatureCardProps) => {
-    const common = "flex items-center p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 border border-gray-100 transform hover:scale-[1.01]";
-    if (onClick) {
-      return (
-        <button onClick={onClick} className={common}>
-          <div className="p-3 bg-blue-100 text-blue-800 rounded-lg mr-4 shadow-inner"><Icon size={24} /></div>
-          <div><h3 className="font-bold text-lg text-gray-800">{title}</h3><p className="text-sm text-gray-500">{description}</p></div>
-        </button>
-      );
-    }
     return (
-      <a href={href || '#'} className={common}>
-        <div className="p-3 bg-blue-100 text-blue-800 rounded-lg mr-4 shadow-inner"><Icon size={24} /></div>
-        <div><h3 className="font-bold text-lg text-gray-800">{title}</h3><p className="text-sm text-gray-500">{description}</p></div>
-      </a>
-    );
-  };
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Header / Hero */}
+      <header className="relative overflow-hidden bg-slate-950 text-white">
+        <div className="absolute -right-24 -top-32 h-80 w-80 rounded-full bg-blue-600/20 blur-3xl" />
+        <div className="absolute -left-24 bottom-[-120px] h-72 w-72 rounded-full bg-cyan-500/10 blur-3xl" />
 
+        <div className="relative mx-auto max-w-6xl px-5 pb-28 pt-7 sm:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 backdrop-blur">
+                <User size={21} />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-300">
+                  KPPN Lhokseumawe
+                </p>
+                <p className="mt-0.5 text-sm text-slate-300">Employee Dashboard</p>
+              </div>
+            </div>
 
-  const [open, setOpen] = useState(false);
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-
-  // const router = useRouter();
-
-const handleOpenModal = () => {
-  setOpen(true);
-};
-
-const handleSubmit = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-
-  router.push(
-    `/rapor/${user?.id}?tahun=${tahun}&semester=${semester}`
-  );
-};
-
-  if (isLoading || isLoggingOut) return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-blue-700" />
-        <p className="mt-4 text-gray-600 font-semibold">{isLoggingOut ? "Sampai Jumpa..." : "Memuat Dashboard..."}</p>
-      </div>
-    </div>
-  );
-
- 
-
-  return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      <header className="bg-blue-900 text-white p-6 pb-20 shadow-xl rounded-b-2xl">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-full bg-white"><User size={24} className="text-blue-900" /></div>
-            <div><h1 className="text-xl font-extrabold">{userData.fullName}</h1><p className="text-sm opacity-80">{userData.email}</p></div>
+            <button
+              onClick={handleLogout}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-rose-500/20 hover:text-white"
+              aria-label="Logout"
+            >
+              <LogOut size={19} />
+            </button>
           </div>
-          <button onClick={handleLogout} className="text-white hover:text-red-300 transition duration-200 p-2 rounded-full" aria-label="Logout"><LogOut size={24} /></button>
+
+          <div className="mt-10 max-w-2xl">
+            <p className="text-sm font-medium text-blue-300">Selamat datang kembali 👋</p>
+            <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+              {userData.fullName}
+            </h1>
+            <p className="mt-2 text-sm text-slate-400">{userData.email}</p>
+          </div>
         </div>
       </header>
 
-      <main className="px-5 -mt-10 pb-10">
-        {/* Status Absensi */}
-        <div className="bg-white p-5 rounded-xl shadow-2xl mb-6 border-b-4 border-blue-500">
-          <h2 className="text-sm font-medium text-gray-500 mb-3 uppercase tracking-wider">
-            Status Aktivitas {currentShift ? `(Shift ${currentShift.toUpperCase()})` : ''}
-          </h2>
-          <div className="flex items-center justify-between"><StatusBadge status={absensiStatus} /></div>
-        </div>
+      <main className="relative mx-auto -mt-20 max-w-6xl px-5 pb-12 sm:px-8">
+        {/* Attendance summary */}
+        <section className="grid gap-4 lg:grid-cols-[1fr_320px]">
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                  <span className="h-2 w-2 rounded-full bg-blue-600" />
+                  Status aktivitas
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <StatusBadge status={absensiStatus} />
+                  {currentShift && (
+                    <span className="rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600">
+                      Shift {currentShift.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
 
-        {/* Tombol Absen */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <button 
-            onClick={handleAbsenMasuk} 
-            className={`flex items-center justify-center space-x-2 py-3 rounded-xl shadow-lg transition duration-300 ${isMasukDisabled ? 'bg-gray-400 cursor-not-allowed shadow-none' : 'bg-blue-800 text-white hover:bg-blue-700'}`}
-            disabled={isMasukDisabled}
-          >
-            <ArrowRight size={20} /><span className="font-bold">Absen Masuk</span>
-          </button>
+              <div className="rounded-2xl bg-slate-50 px-5 py-4 sm:min-w-[180px]">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Hari ini</p>
+                <p className="mt-1 font-bold text-slate-800">
+                  {new Date(`${todayDate}T00:00:00`).toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <button 
-            onClick={handleAbsenPulang} 
-            className={`flex items-center justify-center space-x-2 py-3 rounded-xl shadow-lg transition duration-300 ${isPulangDisabled ? 'bg-gray-400 text-gray-200 shadow-none cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}
-            disabled={isPulangDisabled}
-          >
-            <ArrowLeft size={20} /><span className="font-bold">Absen Pulang</span>
-          </button>
-        </div>
-
-        {/* Alert Logbook */}
-        {(absensiStatus === 'Masuk' || absensiStatus === 'Terlambat') && (
-          <div className={`p-4 mb-8 rounded-xl shadow-sm border ${hasCompletedLogbook ? 'bg-green-50 border-green-300 text-green-800' : 'bg-yellow-50 border-yellow-300 text-yellow-800'}`}>
-            <p className="font-semibold text-center flex items-center justify-center text-sm">
-              <AlertTriangle size={20} className={`mr-2 ${hasCompletedLogbook ? 'text-green-600' : ''}`} />
-              {hasCompletedLogbook 
-                ? 'Logbook sudah diisi. Silakan Absen Pulang.' 
-                : 'Isi Logbook dulu agar tombol Pulang aktif.'}
+          <div className="rounded-3xl bg-gradient-to-br from-blue-700 to-blue-900 p-6 text-white shadow-xl shadow-blue-900/20">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-200">Presensi</p>
+            <h2 className="mt-2 text-xl font-black">Kelola kehadiran</h2>
+            <p className="mt-1 text-sm leading-5 text-blue-100/80">
+              Lakukan presensi masuk dan pulang sesuai aktivitas kerja Anda.
             </p>
+          </div>
+        </section>
+
+        {/* Check in/out */}
+        <section className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            onClick={handleAbsenMasuk}
+            disabled={isMasukDisabled}
+            className={`group flex items-center justify-between rounded-2xl p-5 text-left transition-all duration-300 ${
+              isMasukDisabled
+                ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+                : "bg-slate-900 text-white shadow-lg shadow-slate-900/10 hover:-translate-y-0.5 hover:bg-blue-700"
+            }`}
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider opacity-60">Presensi</p>
+              <p className="mt-1 text-lg font-black">Absen Masuk</p>
+              <p className="mt-1 text-xs opacity-70">Mulai aktivitas kerja</p>
+            </div>
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${isMasukDisabled ? "bg-slate-200" : "bg-white/10 group-hover:bg-white/20"}`}>
+              <ArrowRight size={22} />
+            </div>
+          </button>
+
+          <button
+            onClick={handleAbsenPulang}
+            disabled={isPulangDisabled}
+            className={`group flex items-center justify-between rounded-2xl p-5 text-left transition-all duration-300 ${
+              isPulangDisabled
+                ? "cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400"
+                : "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10 hover:-translate-y-0.5 hover:bg-emerald-700"
+            }`}
+          >
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider opacity-70">Presensi</p>
+              <p className="mt-1 text-lg font-black">Absen Pulang</p>
+              <p className="mt-1 text-xs opacity-80">
+                {hasCompletedLogbook ? "Siap menyelesaikan hari kerja" : "Isi logbook terlebih dahulu"}
+              </p>
+            </div>
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${isPulangDisabled ? "bg-slate-200" : "bg-white/10 group-hover:bg-white/20"}`}>
+              <ArrowLeft size={22} />
+            </div>
+          </button>
+        </section>
+
+        {/* Logbook notice */}
+        {(absensiStatus === "Masuk" || absensiStatus === "Terlambat") && (
+          <div className={`mt-4 flex items-center gap-3 rounded-2xl border p-4 ${
+            hasCompletedLogbook
+              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+              : "border-amber-200 bg-amber-50 text-amber-800"
+          }`}>
+            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+              hasCompletedLogbook ? "bg-emerald-100" : "bg-amber-100"
+            }`}>
+              {hasCompletedLogbook ? "✓" : <AlertTriangle size={18} />}
+            </div>
+            <div>
+              <p className="text-sm font-bold">
+                {hasCompletedLogbook ? "Logbook sudah diisi" : "Logbook belum selesai"}
+              </p>
+              <p className="mt-0.5 text-xs opacity-80">
+                {hasCompletedLogbook
+                  ? "Anda sudah dapat melanjutkan ke proses Absen Pulang."
+                  : "Isi logbook aktivitas sebelum melakukan Absen Pulang."}
+              </p>
+            </div>
           </div>
         )}
 
-        {/* Menu */}
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Menu Aplikasi</h2>
-        <div className="space-y-4">
-          <FeatureCard icon={FileText} title="Logbook" description="Catat detail aktivitas harian Anda." href="/logbook" />
-          <FeatureCard icon={FileText} title="Absen Lembur" description="Catat detail aktivitas harian Anda." href="/lembur" />
-          <FeatureCard icon={Briefcase} title="Perjalanan Dinas" description="Catat perjalanan dinas dan presensi di setiap tahap." href="/perjalanandinas"/>
-          <FeatureCard icon={Briefcase} title="Pengajuan Cuti" description="Ajukan permohonan cuti." href="/pengajuancutipage" />
-          <FeatureCard icon={AlertTriangle} title="Pengajuan Izin" description="Ajukan izin tidak hadir atau keperluan mendadak." href="/pengajuanizin" />
-          <FeatureCard icon={BarChart2} title="Rekap Absensi" description="Lihat riwayat kehadiran bulanan." href="/rekapabsensi" />
-          <FeatureCard icon={BarChart2} title="Rekap Lembur" description="Lihat riwayat lembur." href="/rekaplembur" />
-          <FeatureCard icon={BarChart2} title="Perilaku Kerja" description="Masih tahap pengembangan" href="/penilaianperilaku" />
-          <FeatureCard icon={BarChart3}
-                  title="Rapor Kinerja"
-                  description="Masih tahap pengembangan" 
-                  href="#"
-                  onClick={handleOpenModal}
-                />
-        </div>
-        {open && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-80">
-            
-            <h2 className="text-lg font-bold mb-4">
-              Pilih Periode
-            </h2>
-
-            {/* Tahun */}
-            <select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="w-full border p-2 mb-3"
-            >
-              {[2024, 2025, 2026].map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </select>
-
-            {/* Bulan */}
-            <select
-              value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
-              className="w-full border p-2 mb-4"
-            >
-              {Array.from({ length: 12 }).map((_, i) => (
-                <option key={i + 1} value={i + 1}>
-                  {i + 1}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setOpen(false)}
-                className="px-3 py-1 border"
-              >
-                Batal
-              </button>
-
-              <button
-                onClick={handleSubmit}
-                className="px-3 py-1 bg-blue-600 text-white"
-              >
-                Lihat
-              </button>
+        {/* Application menu */}
+        <section className="mt-9">
+          <div className="mb-5 flex items-end justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">Workspace</p>
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-slate-900">Menu Aplikasi</h2>
             </div>
-
+            <span className="hidden rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm ring-1 ring-slate-200 sm:block">
+              {9} layanan
+            </span>
           </div>
-        </div>
-      )}
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard icon={FileText} title="Logbook" description="Catat aktivitas dan pekerjaan harian." href="/logbook" />
+            <FeatureCard icon={FileText} title="Absen Lembur" description="Kelola dan catat aktivitas lembur." href="/lembur" />
+            <FeatureCard icon={Briefcase} title="Perjalanan Dinas" description="Presensi pada setiap tahap perjalanan dinas." href="/perjalanandinas" />
+            <FeatureCard icon={Briefcase} title="Pengajuan Cuti" description="Ajukan dan pantau permohonan cuti." href="/pengajuancutipage" />
+            <FeatureCard icon={AlertTriangle} title="Pengajuan Izin" description="Ajukan izin tidak hadir atau keperluan mendadak." href="/pengajuanizin" />
+            <FeatureCard icon={BarChart2} title="Rekap Absensi" description="Lihat riwayat dan rekap kehadiran." href="/rekapabsensi" />
+            <FeatureCard icon={BarChart2} title="Rekap Lembur" description="Lihat riwayat dan rekap lembur." href="/rekaplembur" />
+            <FeatureCard icon={BarChart2} title="Perilaku Kerja" description="Pantau penilaian perilaku kerja." href="/penilaianperilaku" />
+            <FeatureCard icon={BarChart3} title="Rapor Kinerja" description="Lihat rapor kinerja berdasarkan periode." onClick={handleOpenModal} />
+          </div>
+        </section>
+
+        {/* Period modal */}
+        {open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-5 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Rapor Kinerja</p>
+                  <h2 className="mt-1 text-xl font-black text-slate-900">Pilih Periode</h2>
+                  <p className="mt-1 text-sm text-slate-500">Tentukan tahun dan bulan laporan.</p>
+                </div>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-sm font-semibold text-slate-700">
+                  Tahun
+                  <select
+                    value={year}
+                    onChange={(e) => setYear(Number(e.target.value))}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  >
+                    {[2024, 2025, 2026].map((y) => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="text-sm font-semibold text-slate-700">
+                  Bulan
+                  <select
+                    value={month}
+                    onChange={(e) => setMonth(Number(e.target.value))}
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  >
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <option key={i + 1} value={i + 1}>{i + 1}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="flex-1 rounded-xl bg-blue-700 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-700/20 transition hover:bg-blue-800"
+                >
+                  Lihat Rapor
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
-       
     </div>
   );
 }
